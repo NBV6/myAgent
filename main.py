@@ -1,50 +1,85 @@
-# 这是一个示例 Python 脚本。
+import os
+import role
 from openai import OpenAI
+from memory import show_history, compress_history, summary
 
-
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
-
-def getClient():
-    myApiKey = "054d4daed4a44727aab84544df8afef0.6m58aVRwrJvWM6kF";
+def get_client():
+    api_key = os.getenv("glm_key")
     client = OpenAI(
-        api_key=myApiKey,
+        api_key=api_key,
         base_url="https://open.bigmodel.cn/api/paas/v4/"
     )
     return client
 
-messages = []
 
-def talk(question):
-    client = getClient()
+client = get_client()
+messages = [
+    {
+        "role": "user",
+        "content": "你是一个助手"
+    }
+]
 
-    questContest = {
+
+def choose_role(role_message):
+    for content in messages:
+        if content["role"] == "system":
+            content["content"] = role_message["content"]
+            return
+
+    messages.insert(0, role_message)
+
+
+def get_response(question, is_stream):
+    question_context = {
         "role": "user",
         "content": question
     }
-    messages.append(questContest)
+    messages.append(question_context)
 
     response = client.chat.completions.create(
         model="glm-5",
-        messages = messages,
-        stream = True
+        messages=messages,
+        stream=is_stream
     )
+    return response
 
-    responseContext = {
-        "role":"assistant",
-        "content":""
+
+def talk_by_stream(question):
+    response = get_response(question, True)
+
+    response_context = {
+        "role": "assistant",
+        "content": ""
     }
+
     for chunk in response:
-        if chunk.choices[0].delta.content:
-            print(chunk.choices[0].delta.content, end="", flush=True)
-            responseContext["content"] += chunk.choices[0].delta.content
-    messages.append(responseContext)
+        text = chunk.choices[0].delta.content
+        if text:
+            print(text, end="", flush=True)
+            response_context["content"] += text
+
+    messages.append(response_context)
+    print()
 
 
-# 按装订区域中的绿色按钮以运行脚本。
 if __name__ == '__main__':
-    while(True):
-        question = input()
+    print("选择AI角色：")
+    needed = input().strip()
+
+    choose_role(role.role_map[needed])
+
+    while True:
+        question = input("你：").strip()
+
         if question == "break":
             break
-        talk(question)
+        elif question == "/history":
+            show_history(messages)
+        elif question == "/summary":
+            summary(messages, client)
+        elif question == "/compress":
+            compress_history(client, messages)
+            print("历史已压缩")
+        else:
+            talk_by_stream(question)
