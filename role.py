@@ -11,6 +11,7 @@ teacher = {
     "role": "system",
     "content": "你是一个老师,你需要帮助学生解决各种问题"
 }
+
 role_map["javaAssistant"] = javaAssistant
 role_map["pythonAssistant"] = pythonAssistant
 role_map["teacher"] = teacher

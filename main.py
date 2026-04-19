@@ -81,5 +81,7 @@ if __name__ == '__main__':
         elif question == "/compress":
             compress_history(client, messages)
             print("历史已压缩")
+        elif question == "/read":
+            read_file()
         else:
             talk_by_stream(question)
