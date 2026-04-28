@@ -1,7 +1,8 @@
 import os
 import role
 from openai import OpenAI
-from memory import show_history, compress_history, summary
+from temMemory import show_history, compress_history, summary
+from tools import read_file
 
 def get_client():
     api_key = os.getenv("glm_key")
@@ -13,21 +14,14 @@ def get_client():
 
 
 client = get_client()
-messages = [
-    {
-        "role": "user",
-        "content": "你是一个助手"
-    }
-]
-
+messages = []
 
 def choose_role(role_message):
     for content in messages:
         if content["role"] == "system":
             content["content"] = role_message["content"]
             return
-
-    messages.insert(0, role_message)
+    messages.append( role_message)
 
 
 def get_response(question, is_stream):
@@ -65,9 +59,15 @@ def talk_by_stream(question):
 
 if __name__ == '__main__':
     print("选择AI角色：")
-    needed = input().strip()
 
-    choose_role(role.role_map[needed])
+    while True:
+        print("请输入正确的角色名称：")
+        needed = input().strip()
+        if needed in role.role_map:
+            choose_role(role.role_map[needed])
+            break
+        else:
+            print("当前角色不存在，请输入正确的角色名称")
 
     while True:
         question = input("你：").strip()

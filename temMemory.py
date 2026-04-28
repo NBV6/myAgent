@@ -13,7 +13,10 @@ def compress_history(client, messages):
     temp_messages = messages + [
         {
             "role": "user",
-            "content": "请把以上历史对话压缩成简洁摘要，保留用户目标、重要背景和关键结论。"
+            "content": (
+                "请把以上历史对话压缩成简洁摘要，保留用户目标、关键背景、"
+                "重要约束、已完成事项和后续需要延续的上下文。"
+            )
         }
     ]
 
@@ -29,8 +32,8 @@ def compress_history(client, messages):
         messages.append(system_message)
 
     messages.append({
-        "role": "user",
-        "content": "历史摘要：" + summary_text
+        "role": "system",
+        "content": "以下是此前对话的摘要：" + summary_text
     })
 
 
@@ -51,4 +54,3 @@ def summary(messages, client):
         if text:
             print(text, end="", flush=True)
     print()
-
